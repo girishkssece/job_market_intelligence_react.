@@ -1,0 +1,15 @@
+# Environment variables (secret API keys)
+.env
+.env.local
+.env.*.local
+
+# Python cache & virtualenv
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Data & outputs cache if large
+data/outputs/*.html

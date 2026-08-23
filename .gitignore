@@ -1,0 +1,21 @@
+# Node & Frontend
+**/node_modules/
+**/dist/
+**/dist-ssr/
+
+# Python & Backend
+**/__pycache__/
+*.py[cod]
+**/venv/
+**/.venv/
+
+# Environment Variables & Secrets
+**/.env
+**/.env.local
+**/.env.*.local
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
