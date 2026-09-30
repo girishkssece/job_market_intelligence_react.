@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { PageWrapper, GlassCard, LoadingSpinner, Tabs } from '../components/common/UIComponents';
+import { PageWrapper, GlassCard, LoadingSpinner, ErrorBanner, Tabs } from '../components/common/UIComponents';
 import { api } from '../services/api';
 import { TARGET_ROLES } from '../data/constants';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line } from 'recharts';
@@ -13,29 +13,31 @@ export function MarketOverview() {
   const [expData, setExpData] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    async function loadMarketData() {
-      setLoading(true);
-      try {
-        const [salRes, skillRes, expRes, compRes] = await Promise.all([
-          api.getSalaryByRole(selectedRegion),
-          api.getSkills(selectedRole, selectedRegion, 15),
-          api.getExperienceAnalysis(selectedRole),
-          api.getCompanies(selectedRole, selectedRegion, 15),
-        ]);
-        setSalaryByRole(salRes);
-        setSkillsData(skillRes);
-        setExpData(expRes);
-        setCompanies(compRes);
-      } catch (err) {
-        console.error('Error fetching market overview:', err);
-      } finally {
-        setLoading(false);
-      }
+  const loadMarketData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [salRes, skillRes, expRes, compRes] = await Promise.all([
+        api.getSalaryByRole(selectedRegion),
+        api.getSkills(selectedRole === 'All Roles' ? null : selectedRole, selectedRegion, 15),
+        api.getExperienceAnalysis(selectedRole === 'All Roles' ? null : selectedRole),
+        api.getCompanies(selectedRole === 'All Roles' ? null : selectedRole, selectedRegion, 15),
+      ]);
+      setSalaryByRole(salRes);
+      setSkillsData(skillRes);
+      setExpData(expRes);
+      setCompanies(compRes);
+    } catch (err) {
+      console.error('Error fetching market overview:', err);
+      setError(err);
+    } finally {
+      setLoading(false);
     }
-    loadMarketData();
-  }, [selectedRole, selectedRegion]);
+  };
+
+  useEffect(() => { loadMarketData(); }, [selectedRole, selectedRegion]);
 
   return (
     <PageWrapper
@@ -85,6 +87,8 @@ export function MarketOverview() {
 
       {loading ? (
         <LoadingSpinner />
+      ) : error ? (
+        <ErrorBanner error={error} onRetry={loadMarketData} />
       ) : (
         <>
           {activeTab === 'salary' && (
@@ -93,10 +97,10 @@ export function MarketOverview() {
                 <h3 className="mb-md">Median Salary by Role Category ({selectedRegion})</h3>
                 <div style={{ height: 420 }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={salaryByRole} layout="vertical" margin={{ left: 80, right: 30, top: 10, bottom: 10 }}>
+                    <BarChart data={salaryByRole} layout="vertical" margin={{ left: 0, right: 30, top: 10, bottom: 10 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#1E3055" />
                       <XAxis type="number" stroke="#94A3B8" tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
-                      <YAxis dataKey="role" type="category" stroke="#94A3B8" width={140} />
+                      <YAxis dataKey="role" type="category" stroke="#94A3B8" width={180} tick={{ fontSize: 12 }} />
                       <Tooltip
                         formatter={(val) => [`$${val.toLocaleString()} (${(val/1200).toFixed(1)} LPA)`, 'Median Salary']}
                         contentStyle={{ background: '#162040', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
@@ -144,9 +148,9 @@ export function MarketOverview() {
               <h3 className="mb-md">Most Demanded Skills for {selectedRole} ({selectedRegion})</h3>
               <div style={{ height: 450 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={skillsData} margin={{ left: 20, right: 20, top: 20, bottom: 60 }}>
+                  <BarChart data={skillsData} margin={{ left: 10, right: 20, top: 20, bottom: 70 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1E3055" />
-                    <XAxis dataKey="skill" stroke="#94A3B8" angle={-45} textAnchor="end" />
+                    <XAxis dataKey="skill" stroke="#94A3B8" angle={-45} textAnchor="end" tick={{ fontSize: 12 }} />
                     <YAxis stroke="#94A3B8" />
                     <Tooltip
                       contentStyle={{ background: '#162040', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}

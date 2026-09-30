@@ -60,54 +60,156 @@ def export_report(req: ReportRequest):
         elements.append(Paragraph(f"Prepared for: <b>{req.user_name}</b>", body_style))
     elements.append(Spacer(1, 0.5*cm))
 
-    # Market Overview
+    # ── Shared Data ───────────────────────────────────────────────────────────
     df = get_dataframe()
     sal = get_salary_df(df)
+    role_df = df[df["role_category"] == req.role]
     role_data = sal[sal["role_category"] == req.role]
     if req.region == "India":
+        role_df   = role_df[role_df["region"] == "India"]
         role_data = role_data[role_data["region"] == "India"]
 
-    elements.append(Paragraph("1. Market Overview", heading_style))
+    total_jobs = len(role_df)
+
+    # ── Section 1: Salary Benchmarks ─────────────────────────────────────────
+    elements.append(Paragraph("1. Salary Benchmarks", heading_style))
     elements.append(HRFlowable(width="100%", thickness=1, color=LIGHT_GRAY))
 
     if len(role_data) >= 5:
-        p25 = role_data["salary_usd"].quantile(0.25)
+        p10    = role_data["salary_usd"].quantile(0.10)
+        p25    = role_data["salary_usd"].quantile(0.25)
         median = role_data["salary_usd"].median()
-        p75 = role_data["salary_usd"].quantile(0.75)
-        p90 = role_data["salary_usd"].quantile(0.90)
+        p75    = role_data["salary_usd"].quantile(0.75)
+        p90    = role_data["salary_usd"].quantile(0.90)
 
-        total_jobs = len(df[df["role_category"] == req.role])
         overview_data = [
-            ["Metric", "Value (USD)", "Value (INR)"],
-            ["Total Job Postings", f"{total_jobs:,}", "-"],
-            ["25th Percentile", f"${p25:,.0f}", f"₹{p25/1200:.1f} LPA"],
-            ["Median Salary", f"${median:,.0f}", f"₹{median/1200:.1f} LPA"],
-            ["75th Percentile", f"${p75:,.0f}", f"₹{p75/1200:.1f} LPA"],
-            ["90th Percentile", f"${p90:,.0f}", f"₹{p90/1200:.1f} LPA"],
+            ["Percentile", "Annual (USD)", "Annual (INR ≈ ₹83/$)"],
+            ["10th Percentile (Entry)",    f"${p10:,.0f}",    f"₹{p10*83/100000:.1f} LPA"],
+            ["25th Percentile",            f"${p25:,.0f}",    f"₹{p25*83/100000:.1f} LPA"],
+            ["50th Percentile (Median)",   f"${median:,.0f}", f"₹{median*83/100000:.1f} LPA"],
+            ["75th Percentile",            f"${p75:,.0f}",    f"₹{p75*83/100000:.1f} LPA"],
+            ["90th Percentile (Senior)",   f"${p90:,.0f}",    f"₹{p90*83/100000:.1f} LPA"],
+            ["Total Job Postings",         f"{total_jobs:,}", "-"],
         ]
-        table = Table(overview_data, colWidths=[6*cm, 5*cm, 5*cm])
-        table.setStyle(TableStyle([
+        tbl = Table(overview_data, colWidths=[6*cm, 5*cm, 5*cm])
+        tbl.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), PRIMARY),
             ("TEXTCOLOR", (0, 0), (-1, 0), white),
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
-            ("FONTSIZE", (0, 1), (-1, -1), 10),
+            ("FONTSIZE", (0, 0), (-1, -1), 10),
             ("ROWBACKGROUNDS", (0, 1), (-1, -1), [white, LIGHT_BG]),
             ("GRID", (0, 0), (-1, -1), 0.5, LIGHT_GRAY),
             ("TOPPADDING", (0, 0), (-1, -1), 6),
             ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
         ]))
-        elements.append(table)
+        elements.append(tbl)
     else:
-        elements.append(Paragraph(f"Insufficient salary data for {req.role}.", body_style))
+        elements.append(Paragraph(f"Insufficient salary data for {req.role} in {req.region}.", body_style))
 
-    # Footer
+    elements.append(Spacer(1, 0.5*cm))
+
+    # ── Section 2: Top Skills ─────────────────────────────────────────────────
+    elements.append(Paragraph("2. Top 15 In-Demand Skills", heading_style))
+    elements.append(HRFlowable(width="100%", thickness=1, color=LIGHT_GRAY))
+    top_skills = get_skills(role=req.role if req.role else None,
+                            region="India" if req.region == "India" else None,
+                            top_n=15)
+    if top_skills:
+        skills_data = [["Rank", "Skill", "# Job Postings"]]
+        for i, s in enumerate(top_skills, 1):
+            skills_data.append([str(i), s["skill"].title(), f"{s['count']:,}"])
+        sk_tbl = Table(skills_data, colWidths=[1.5*cm, 8*cm, 6.5*cm])
+        sk_tbl.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), ACCENT),
+            ("TEXTCOLOR", (0, 0), (-1, 0), white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("ALIGN", (0, 0), (0, -1), "CENTER"),
+            ("ALIGN", (2, 0), (2, -1), "CENTER"),
+            ("FONTSIZE", (0, 0), (-1, -1), 10),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [white, LIGHT_BG]),
+            ("GRID", (0, 0), (-1, -1), 0.5, LIGHT_GRAY),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ]))
+        elements.append(sk_tbl)
+    else:
+        elements.append(Paragraph("No skill data available for this selection.", body_style))
+
+    elements.append(Spacer(1, 0.5*cm))
+
+    # ── Section 3: Top Hiring Companies ──────────────────────────────────────
+    elements.append(Paragraph("3. Top 10 Hiring Companies", heading_style))
+    elements.append(HRFlowable(width="100%", thickness=1, color=LIGHT_GRAY))
+    from services.data_service import get_companies
+    top_companies = get_companies(role=req.role if req.role else None,
+                                  region="India" if req.region == "India" else None,
+                                  top_n=10)
+    if top_companies:
+        comp_data = [["Rank", "Company", "Open Postings"]]
+        for i, c in enumerate(top_companies, 1):
+            comp_data.append([str(i), c["company"], str(c["openings"])])
+        co_tbl = Table(comp_data, colWidths=[1.5*cm, 10*cm, 4.5*cm])
+        co_tbl.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), PRIMARY),
+            ("TEXTCOLOR", (0, 0), (-1, 0), white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("ALIGN", (0, 0), (0, -1), "CENTER"),
+            ("ALIGN", (2, 0), (2, -1), "CENTER"),
+            ("FONTSIZE", (0, 0), (-1, -1), 10),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [white, LIGHT_BG]),
+            ("GRID", (0, 0), (-1, -1), 0.5, LIGHT_GRAY),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ]))
+        elements.append(co_tbl)
+    else:
+        elements.append(Paragraph("No company data available for this selection.", body_style))
+
+    elements.append(Spacer(1, 0.5*cm))
+
+    # ── Section 4: Negotiation Benchmarks ────────────────────────────────────
+    if len(role_data) >= 5:
+        elements.append(Paragraph("4. Salary Negotiation Benchmarks", heading_style))
+        elements.append(HRFlowable(width="100%", thickness=1, color=LIGHT_GRAY))
+        elements.append(Paragraph(
+            f"Use these benchmarks when negotiating your {req.role} offer. "
+            "Always anchor to the 75th–90th percentile range.", body_style))
+        elements.append(Spacer(1, 0.2*cm))
+
+        neg_data = [
+            ["Career Stage", "Target Ask (USD)", "Target Ask (INR)", "Strategy"],
+            ["Entry Level / Fresher", f"${p25:,.0f}–${median:,.0f}",
+             f"₹{p25*83/100000:.0f}–{median*83/100000:.0f}L", "Negotiate on benefits, signing bonus"],
+            ["Mid Level (3-6 yrs)",   f"${median:,.0f}–${p75:,.0f}",
+             f"₹{median*83/100000:.0f}–{p75*83/100000:.0f}L", "Lead with competing offers"],
+            ["Senior Level (6+ yrs)", f"${p75:,.0f}–${p90:,.0f}",
+             f"₹{p75*83/100000:.0f}–{p90*83/100000:.0f}L", "Anchor at P90, settle at P75"],
+        ]
+        neg_tbl = Table(neg_data, colWidths=[4*cm, 4*cm, 4*cm, 4*cm])
+        neg_tbl.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), ACCENT),
+            ("TEXTCOLOR", (0, 0), (-1, 0), white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 9),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [white, LIGHT_BG]),
+            ("GRID", (0, 0), (-1, -1), 0.5, LIGHT_GRAY),
+            ("TOPPADDING", (0, 0), (-1, -1), 6),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ("WORDWRAP", (0, 0), (-1, -1), True),
+        ]))
+        elements.append(neg_tbl)
+
+    # ── Footer ────────────────────────────────────────────────────────────────
     elements.append(Spacer(1, 1*cm))
     elements.append(HRFlowable(width="100%", thickness=1, color=LIGHT_GRAY))
     footer_style = ParagraphStyle("Footer", parent=styles["Normal"],
                                   fontSize=8, textColor=GRAY, alignment=TA_CENTER)
-    elements.append(Paragraph(f"Generated by CareerLens v2.0 | {datetime.now().strftime('%Y')}", footer_style))
+    elements.append(Paragraph(
+        f"CareerLens Market Intelligence Report | Generated {datetime.now().strftime('%B %d, %Y')} | "
+        f"Data sourced from 115,000+ job postings (Naukri + LinkedIn)",
+        footer_style))
 
     doc.build(elements)
     buffer.seek(0)
@@ -118,3 +220,4 @@ def export_report(req: ReportRequest):
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
+

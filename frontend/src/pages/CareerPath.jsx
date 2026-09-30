@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PageWrapper, GlassCard, LoadingSpinner } from '../components/common/UIComponents';
+import { PageWrapper, GlassCard, LoadingSpinner, ErrorBanner } from '../components/common/UIComponents';
 import { api } from '../services/api';
 import { TARGET_ROLES } from '../data/constants';
 
@@ -10,20 +10,22 @@ export function CareerPath() {
   const [experience, setExperience] = useState(2);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleExplore = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
+    setResult(null);
     try {
       const res = await api.getCareerPath({
-        current_role: currentRole,
-        target_role: targetRole,
-        skills,
-        experience: parseInt(experience),
+        current_role: currentRole, target_role: targetRole,
+        skills, experience: parseInt(experience),
       });
-      setResult(res.result || res.error);
+      if (res.error) setError(res.error);
+      else setResult(res.result);
     } catch (err) {
-      console.error('Failed to get career path:', err);
+      setError(err.message || 'Failed to generate career path. Check backend.');
     } finally {
       setLoading(false);
     }
@@ -88,6 +90,10 @@ export function CareerPath() {
 
       {loading ? (
         <LoadingSpinner text="Building personalized career transition roadmap..." />
+      ) : error ? (
+        <GlassCard noHover>
+          <ErrorBanner error={error} />
+        </GlassCard>
       ) : result ? (
         <GlassCard noHover>
           <div className="ai-result">{result}</div>

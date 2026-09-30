@@ -15,6 +15,7 @@ class PredictRequest(BaseModel):
     experience: float = 2.0
     skills: List[str] = []
     city: str = "other"
+    market: str = "India"
 
 
 @router.post("/predict-salary")
@@ -24,6 +25,7 @@ def predict(req: PredictRequest):
         experience=req.experience,
         skills=req.skills,
         city=req.city,
+        market=req.market,
     )
 
 

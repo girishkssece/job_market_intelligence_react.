@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PageWrapper, GlassCard, LoadingSpinner, Tabs } from '../components/common/UIComponents';
+import { PageWrapper, GlassCard, LoadingSpinner, Tabs, ErrorBanner } from '../components/common/UIComponents';
 import { api } from '../services/api';
 import { TARGET_ROLES } from '../data/constants';
 
@@ -18,23 +18,23 @@ export function SalaryNegotiation() {
   const [scriptResult, setScriptResult] = useState(null);
   const [emailResult, setEmailResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [scriptError, setScriptError] = useState(null);
+  const [emailError, setEmailError] = useState(null);
 
   const handleGenerateScript = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setScriptError(null);
+    setScriptResult(null);
     try {
       const res = await api.generateNegotiationScript({
-        role,
-        current_salary: parseFloat(currentSal),
-        target_salary: parseFloat(targetSal),
-        company,
-        experience: parseInt(experience),
-        strengths,
-        negotiation_type: negType,
+        role, current_salary: parseFloat(currentSal), target_salary: parseFloat(targetSal),
+        company, experience: parseInt(experience), strengths, negotiation_type: negType,
       });
-      setScriptResult(res.result || res.error);
+      if (res.error) setScriptError(res.error);
+      else setScriptResult(res.result);
     } catch (err) {
-      console.error(err);
+      setScriptError(err.message || 'Failed to generate script.');
     } finally {
       setLoading(false);
     }
@@ -43,18 +43,17 @@ export function SalaryNegotiation() {
   const handleGenerateEmail = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setEmailError(null);
+    setEmailResult(null);
     try {
       const res = await api.generateNegotiationEmail({
-        role,
-        current_salary: parseFloat(currentSal),
-        target_salary: parseFloat(targetSal),
-        company,
-        name: emailName,
-        email_type: emailType,
+        role, current_salary: parseFloat(currentSal), target_salary: parseFloat(targetSal),
+        company, name: emailName, email_type: emailType,
       });
-      setEmailResult(res.result || res.error);
+      if (res.error) setEmailError(res.error);
+      else setEmailResult(res.result);
     } catch (err) {
-      console.error(err);
+      setEmailError(err.message || 'Failed to generate email.');
     } finally {
       setLoading(false);
     }
@@ -151,6 +150,8 @@ export function SalaryNegotiation() {
             <h3 className="mb-md">📜 Personalized AI Negotiation Script</h3>
             {loading ? (
               <LoadingSpinner text="Drafting custom negotiation playbook..." />
+            ) : scriptError ? (
+              <ErrorBanner error={scriptError} />
             ) : scriptResult ? (
               <div className="ai-result">{scriptResult}</div>
             ) : (
@@ -217,6 +218,8 @@ export function SalaryNegotiation() {
             <h3 className="mb-md">📬 Generated Negotiation Email</h3>
             {loading ? (
               <LoadingSpinner text="Writing professional email..." />
+            ) : emailError ? (
+              <ErrorBanner error={emailError} />
             ) : emailResult ? (
               <div className="ai-result">{emailResult}</div>
             ) : (

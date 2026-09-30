@@ -25,7 +25,7 @@ def _call_llm(prompt, max_tokens=2000, temperature=0.7):
         return {"error": "GROQ_API_KEY not configured"}
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="qwen/qwen3.8-27b",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=max_tokens,
             temperature=temperature,
@@ -209,7 +209,7 @@ When users ask for jobs, provide direct search links to Naukri, LinkedIn, and In
             api_messages.append({"role": msg["role"], "content": msg["content"]})
 
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="qwen/qwen3.8-27b",
             messages=api_messages,
             max_tokens=1000,
             temperature=0.7,

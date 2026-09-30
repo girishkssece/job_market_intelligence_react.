@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { PageWrapper, MetricCard, GlassCard, LoadingSpinner, Tabs } from '../components/common/UIComponents';
+import { PageWrapper, MetricCard, GlassCard, LoadingSpinner, ErrorBanner, Tabs } from '../components/common/UIComponents';
 import { api } from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 
@@ -12,24 +12,27 @@ export function GlobalMarket() {
   const [activeTab, setActiveTab] = useState('countries');
   const [excludeUS, setExcludeUS] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
-  useEffect(() => {
-    async function loadGlobal() {
-      try {
-        const res = await api.getGlobalMarket();
-        setData(res);
-        if (res.country_counts && res.country_counts.length > 0) {
-          setSelectedCountry(res.country_counts[0].country);
-        }
-      } catch (err) {
-        console.error('Error loading global market data:', err);
-      } finally {
-        setLoading(false);
+  const loadGlobal = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.getGlobalMarket();
+      setData(res);
+      if (res.country_counts && res.country_counts.length > 0) {
+        setSelectedCountry(res.country_counts[0].country);
       }
+    } catch (err) {
+      console.error('Error loading global market data:', err);
+      setError(err);
+    } finally {
+      setLoading(false);
     }
-    loadGlobal();
-  }, []);
+  };
+
+  useEffect(() => { loadGlobal(); }, []);
 
   useEffect(() => {
     async function loadCountryDetail() {
@@ -48,6 +51,11 @@ export function GlobalMarket() {
   }, [selectedCountry]);
 
   if (loading) return <LoadingSpinner text="Fetching country-by-country global market data..." />;
+  if (error) return (
+    <div style={{ padding: '40px' }}>
+      <ErrorBanner error={error} onRetry={loadGlobal} />
+    </div>
+  );
 
   const rawCountryList = data?.country_counts || [];
   const rawCountrySalaryList = data?.country_salary || [];

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PageWrapper, GlassCard, LoadingSpinner, Tabs } from '../components/common/UIComponents';
+import { PageWrapper, GlassCard, LoadingSpinner, Tabs, ErrorBanner } from '../components/common/UIComponents';
 import { api } from '../services/api';
 import { TARGET_ROLES, QUESTION_BANK } from '../data/constants';
 
@@ -11,26 +11,27 @@ export function InterviewPrep() {
   const [expLevel, setExpLevel] = useState('Mid (3-6 yrs)');
   const [aiQuestions, setAiQuestions] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
 
   const [reviewQuestion, setReviewQuestion] = useState('');
   const [userAnswer, setUserAnswer] = useState('');
   const [reviewResult, setReviewResult] = useState(null);
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewError, setReviewError] = useState(null);
 
   const handleGenerateQuestions = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setAiError(null);
+    setAiQuestions(null);
     try {
       const res = await api.getInterviewQuestions({
-        role,
-        company,
-        experience_level: expLevel,
-        question_type: qType,
-        count: 8,
+        role, company, experience_level: expLevel, question_type: qType, count: 8,
       });
-      setAiQuestions(res.result || res.error);
+      if (res.error) setAiError(res.error);
+      else setAiQuestions(res.result);
     } catch (err) {
-      console.error(err);
+      setAiError(err.message || 'Failed to generate questions.');
     } finally {
       setLoading(false);
     }
@@ -40,15 +41,16 @@ export function InterviewPrep() {
     e.preventDefault();
     if (!reviewQuestion || !userAnswer) return;
     setReviewLoading(true);
+    setReviewError(null);
+    setReviewResult(null);
     try {
       const res = await api.reviewInterviewAnswer({
-        role,
-        question: reviewQuestion,
-        answer: userAnswer,
+        role, question: reviewQuestion, answer: userAnswer,
       });
-      setReviewResult(res.result || res.error);
+      if (res.error) setReviewError(res.error);
+      else setReviewResult(res.result);
     } catch (err) {
-      console.error(err);
+      setReviewError(err.message || 'Failed to review answer.');
     } finally {
       setReviewLoading(false);
     }
@@ -157,6 +159,8 @@ export function InterviewPrep() {
             <h3 className="mb-md">📋 AI Mock Interview Set</h3>
             {loading ? (
               <LoadingSpinner text="Generating company-tailored interview questions..." />
+            ) : aiError ? (
+              <ErrorBanner error={aiError} />
             ) : aiQuestions ? (
               <div className="ai-result">{aiQuestions}</div>
             ) : (
@@ -215,6 +219,8 @@ export function InterviewPrep() {
             <h3 className="mb-md">📊 AI Score & Feedback</h3>
             {reviewLoading ? (
               <LoadingSpinner text="Evaluating answer depth and structure..." />
+            ) : reviewError ? (
+              <ErrorBanner error={reviewError} />
             ) : reviewResult ? (
               <div className="ai-result">{reviewResult}</div>
             ) : (

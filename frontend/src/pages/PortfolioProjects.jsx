@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PageWrapper, GlassCard, LoadingSpinner, Tabs } from '../components/common/UIComponents';
+import { PageWrapper, GlassCard, LoadingSpinner, Tabs, ErrorBanner } from '../components/common/UIComponents';
 import { api } from '../services/api';
 import { TARGET_ROLES, STATIC_PROJECTS } from '../data/constants';
 
@@ -11,21 +11,21 @@ export function PortfolioProjects() {
   const [userSkills, setUserSkills] = useState('');
   const [aiProjects, setAiProjects] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
 
   const handleGenerateAiProjects = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setAiError(null);
+    setAiProjects(null);
     try {
       const res = await api.getPortfolioProjects({
-        role,
-        experience,
-        interests,
-        skills: userSkills,
-        count: 4,
+        role, experience, interests, skills: userSkills, count: 4,
       });
-      setAiProjects(res.result || res.error);
+      if (res.error) setAiError(res.error);
+      else setAiProjects(res.result);
     } catch (err) {
-      console.error(err);
+      setAiError(err.message || 'Failed to generate projects.');
     } finally {
       setLoading(false);
     }
@@ -134,6 +134,8 @@ export function PortfolioProjects() {
             <h3 className="mb-md">🚀 Custom AI Project Blueprint</h3>
             {loading ? (
               <LoadingSpinner text="Building tailor-made portfolio project specs..." />
+            ) : aiError ? (
+              <ErrorBanner error={aiError} />
             ) : aiProjects ? (
               <div className="ai-result">{aiProjects}</div>
             ) : (

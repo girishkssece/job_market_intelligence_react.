@@ -8,7 +8,7 @@ import numpy as np
 import os
 import re
 from collections import Counter
-from functools import lru_cache
+# (lru_cache removed — manual _df_cache pattern used instead)
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
@@ -21,20 +21,56 @@ TARGET_ROLES = [
     "Software Engineering Intern", "Business Analyst Intern",
 ]
 
+# Aligned with original src/utils.py NOISE_SKILLS — preserves real tech skills
+# (e.g. 'data', 'analysis', 'development' removed from noise so they aren't filtered out)
 NOISE_SKILLS = {
-    "communication", "teamwork", "problem solving", "leadership",
-    "management", "english", "hindi", "skills", "ability", "knowledge",
-    "experience", "strong", "good", "excellent", "proficient",
-    "understanding", "familiar", "work", "working", "team",
-    "data", "analysis", "development", "design", "project",
-    "business", "technical", "professional", "years", "role",
-    "job", "position", "candidate", "company", "organization",
-    "required", "preferred", "must", "should", "ability to",
-    "responsible", "responsibilities", "looking", "seeking", "hiring",
-    "join", "opportunity", "growth", "learning", "training",
-    "nan", "none", "", "etc", "eg", "ie", "also", "using",
-    "including", "related", "based", "level", "senior", "junior",
-    "lead", "manager", "analyst", "engineer", "developer", "scientist",
+    # Generic / empty
+    "nan", "", "none", "other", "skills", "experience", "knowledge",
+    "requirements", "qualifications", "responsibilities", "duties",
+    "preferred", "required", "ability", "understanding", "proficiency",
+    "strong", "excellent", "good", "working", "team", "work",
+    "skill", "processing", "analytical", "modeling", "integrity",
+    "research", "sales", "stem", "proactive", "management",
+    "communication skills", "marketing", "languages",
+    # Job title echoes (not skills)
+    "machine", "software development", "software engineer",
+    "data analytics", "data science", "data scientist", "data engineering",
+    "business analysis", "ai", "intelligence", "science", "ml", "analyst",
+    "software engineering", "analytics",
+    # EEO / legal boilerplate
+    "color", "religion", "national origin", "sexual orientation",
+    "dental", "disability", "veteran", "gender", "age",
+    "race", "ethnicity", "origin", "orientation", "status",
+    "equal", "opportunity", "employer", "background", "ancestry",
+    "marital status", "gender identity", "resources",
+    "sex", "pregnancy", "citizenship", "protected", "creed",
+    "genetic information", "veteran status", "arrest",
+    "genetic", "information", "conviction", "retaliation",
+    "accommodation", "affirmative", "401k", "benefits",
+    "compensation", "eeoc", "eeo",
+    "protected veteran status", "gender identity or expression",
+    "familial status", "military or veteran status",
+    "childbirth", "breastfeeding",
+    # Physical requirements
+    "bend", "reach", "stretch", "kneel", "crouch", "crawl",
+    "stoop", "squat", "lift", "stand", "walk", "sit",
+    "climb", "push", "pull", "grasp", "carry",
+    # Medical / irrelevant domains
+    "optometry", "contact lenses", "glaucoma", "ocular disease",
+    "eye exams", "cataract", "low vision", "diabetes", "eyewear",
+    "hospice care", "patient care", "healthcare",
+    "disaster response", "transportation", "lobbying",
+    "hospitality management",
+    # Soft / vague "skills"
+    "people skills", "customer service", "organization",
+    "multi-tasking", "problem solving", "mentoring",
+    "tutoring", "vision", "time management",
+    # Junk from LinkedIn data
+    "vendors", "bus/van driving", "delivery", "truck driving",
+    "lecture", "music streaming", "film", "meeting",
+    "sharepoint", "fundraising", "community outreach",
+    "data entry", "internet research", "office reception",
+    "administrative support", "advocacy", "accounting",
 }
 
 
@@ -92,7 +128,16 @@ def get_dataframe():
     if not os.path.exists(csv_path):
         raise FileNotFoundError(f"Dataset not found at {csv_path}")
 
-    df = pd.read_csv(csv_path)
+    try:
+        df = pd.read_csv(csv_path)
+    except Exception as e:
+        raise RuntimeError(f"Failed to load dataset: {e}") from e
+
+    # Validate required columns
+    required_cols = {"job_title", "skills_clean", "country"}
+    missing = required_cols - set(df.columns)
+    if missing:
+        raise RuntimeError(f"Dataset missing expected columns: {missing}")
 
     # Categorize titles
     df["role_category"] = df["job_title"].apply(categorize_title)
@@ -294,16 +339,31 @@ def get_india_market():
 
     # City counts
     city_counts = (
-        india["city"].dropna().value_counts().head(15).reset_index()
+        india["city"].dropna().value_counts().head(25).reset_index()
     )
     city_counts.columns = ["city", "count"]
-    city_counts = city_counts[~city_counts["city"].isin(["Unknown", "other", "India"])]
+    # Filter: exclude unknown values, multi-city strings (contain comma), and work-mode prefixes
+    city_counts = city_counts[
+        ~city_counts["city"].isin(["Unknown", "other", "India"]) &
+        ~city_counts["city"].str.contains(",", na=False) &
+        ~city_counts["city"].str.lower().str.startswith("hybrid", na=False) &
+        ~city_counts["city"].str.lower().str.startswith("remote", na=False) &
+        ~city_counts["city"].str.lower().str.startswith("work from home", na=False)
+    ].head(15)
 
     # City salary
     city_salary = []
     if len(india_sal) > 0:
         cs = india_sal.groupby("city")["salary_usd"].agg(["median", "count"]).reset_index()
-        cs = cs[(cs["count"] >= 2) & (~cs["city"].isin(["Unknown", "other", "India"]))]
+        # Filter out multi-city strings, hybrid/remote prefixes, and known noise
+        cs = cs[
+            (cs["count"] >= 2) &
+            (~cs["city"].isin(["Unknown", "other", "India"])) &
+            (~cs["city"].str.contains(",", na=False)) &
+            (~cs["city"].str.lower().str.startswith("hybrid", na=False)) &
+            (~cs["city"].str.lower().str.startswith("remote", na=False)) &
+            (~cs["city"].str.lower().str.startswith("work from home", na=False))
+        ]
         cs = cs.sort_values("median", ascending=False).head(15)
         for _, row in cs.iterrows():
             city_salary.append({

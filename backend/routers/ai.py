@@ -91,26 +91,44 @@ def analyze_resume(req: ResumeAnalyzeRequest):
     return ai_service.analyze_resume(req.resume_text, req.target_role)
 
 
-@router.post("/resume-analyze-pdf")
-async def analyze_resume_pdf(
-    file: UploadFile = File(...),
-    target_role: str = Form("Data Scientist"),
-):
+@router.post("/parse-resume")
+async def parse_resume(file: UploadFile = File(...)):
     content = await file.read()
+    filename = file.filename or "resume.pdf"
+    fname_lower = filename.lower()
     text = ""
+
     try:
-        with pdfplumber.open(BytesIO(content)) as pdf:
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text += page_text + "\n"
+        if fname_lower.endswith(".pdf"):
+            try:
+                import pypdf
+                reader = pypdf.PdfReader(BytesIO(content))
+                text = "\n".join([page.extract_text() or "" for page in reader.pages])
+            except Exception:
+                import pdfplumber
+                with pdfplumber.open(BytesIO(content)) as pdf:
+                    text = "\n".join([page.extract_text() or "" for page in pdf.pages])
+        elif fname_lower.endswith(".docx"):
+            import docx
+            doc = docx.Document(BytesIO(content))
+            text = "\n".join([p.text for p in doc.paragraphs if p.text])
+        elif fname_lower.endswith(".txt") or fname_lower.endswith(".md"):
+            text = content.decode("utf-8", errors="ignore")
+        else:
+            text = content.decode("utf-8", errors="ignore")
+
+        cleaned = text.strip()
+        if not cleaned:
+            return {"error": "Could not extract text from file. Please ensure it is not empty or password protected."}
+
+        return {
+            "text": cleaned,
+            "filename": filename,
+            "char_count": len(cleaned),
+            "word_count": len(cleaned.split()),
+        }
     except Exception as e:
-        return {"error": f"Failed to parse PDF: {str(e)}"}
-
-    if not text.strip():
-        return {"error": "Could not extract text from PDF"}
-
-    return ai_service.analyze_resume(text.strip(), target_role)
+        return {"error": f"Failed to parse resume file: {str(e)}"}
 
 
 @router.post("/resume-rewrite")

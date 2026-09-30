@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { PageWrapper, GlassCard, LoadingSpinner, MetricCard, Tabs } from '../components/common/UIComponents';
+import { PageWrapper, GlassCard, LoadingSpinner, ErrorBanner, MetricCard, Tabs } from '../components/common/UIComponents';
 import { api } from '../services/api';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis } from 'recharts';
 
 const COLORS = ['#065A82', '#02C39A', '#0A7EB5', '#04E4B4', '#1E3055', '#38BDF8'];
 
@@ -11,23 +11,26 @@ export function CompanyIntelligence() {
   const [companyDetail, setCompanyDetail] = useState(null);
   const [aiInsights, setAiInsights] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('top');
 
-  useEffect(() => {
-    async function loadCompanies() {
-      try {
-        const res = await api.getCompanies(null, null, 25);
-        setTopCompanies(res);
-        if (res.length > 0) setSelectedCompany(res[0].company);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
+  const loadCompanies = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.getCompanies(null, null, 25);
+      setTopCompanies(res);
+      if (res.length > 0) setSelectedCompany(res[0].company);
+    } catch (err) {
+      console.error(err);
+      setError(err);
+    } finally {
+      setLoading(false);
     }
-    loadCompanies();
-  }, []);
+  };
+
+  useEffect(() => { loadCompanies(); }, []);
 
   useEffect(() => {
     async function loadDetail() {
@@ -57,6 +60,11 @@ export function CompanyIntelligence() {
   };
 
   if (loading) return <LoadingSpinner text="Fetching company hiring data..." />;
+  if (error) return (
+    <div style={{ padding: '40px' }}>
+      <ErrorBanner error={error} onRetry={loadCompanies} />
+    </div>
+  );
 
   const roleChartData = companyDetail?.roles
     ? Object.entries(companyDetail.roles).map(([name, value]) => ({ name, value }))
@@ -147,27 +155,38 @@ export function CompanyIntelligence() {
               <div className="charts-grid">
                 <GlassCard noHover>
                   <h3 className="mb-md">Roles Being Hired</h3>
-                  <div style={{ height: 280 }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie data={roleChartData} cx="50%" cy="50%" innerRadius={50} outerRadius={90} dataKey="value">
-                          {roleChartData.map((e, idx) => (
-                            <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip contentStyle={{ background: '#162040', border: '1px solid rgba(255,255,255,0.1)' }} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
+                  <div style={{ height: 320 }}>
+                     <ResponsiveContainer width="100%" height="100%">
+                       <PieChart>
+                         <Pie data={roleChartData} cx="40%" cy="50%" innerRadius={45} outerRadius={80} dataKey="value">
+                           {roleChartData.map((e, idx) => (
+                             <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
+                           ))}
+                         </Pie>
+                         <Tooltip
+                           formatter={(val, name) => [`${val} postings`, name]}
+                           contentStyle={{ background: '#162040', border: '1px solid rgba(255,255,255,0.1)' }}
+                         />
+                         <Legend
+                           layout="vertical"
+                           align="right"
+                           verticalAlign="middle"
+                           iconType="circle"
+                           iconSize={9}
+                           formatter={(value) => <span style={{ fontSize: '0.72rem', color: '#CBD5E1' }}>{value}</span>}
+                         />
+                       </PieChart>
+                     </ResponsiveContainer>
+                   </div>
                 </GlassCard>
 
                 <GlassCard noHover>
                   <h3 className="mb-md">Skills Demanded by {companyDetail.name}</h3>
                   <div style={{ height: 280 }}>
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={companyDetail.skills || []} layout="vertical">
+                      <BarChart data={companyDetail.skills || []} layout="vertical" margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
                         <XAxis type="number" stroke="#94A3B8" />
-                        <YAxis dataKey="skill" type="category" stroke="#94A3B8" width={90} />
+                        <YAxis dataKey="skill" type="category" stroke="#94A3B8" width={120} tick={{ fontSize: 12 }} />
                         <Tooltip contentStyle={{ background: '#162040', border: '1px solid rgba(255,255,255,0.1)' }} />
                         <Bar dataKey="count" fill="#02C39A" radius={[0, 4, 4, 0]} />
                       </BarChart>

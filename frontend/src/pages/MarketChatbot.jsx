@@ -108,7 +108,7 @@ export function MarketChatbot() {
           🗑️ Clear Conversation
         </button>
         <span className="text-muted" style={{ fontSize: '0.8rem' }}>
-          Powered by Groq Llama 3.3 70B & 115,000+ Job Records
+          Powered by Groq Llama3 70B & 115,000+ Job Records
         </span>
       </div>
     </PageWrapper>

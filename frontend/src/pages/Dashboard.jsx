@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { PageWrapper, MetricCard, GlassCard, LoadingSpinner } from '../components/common/UIComponents';
+import { PageWrapper, MetricCard, GlassCard, LoadingSpinner, ErrorBanner } from '../components/common/UIComponents';
 import { api } from '../services/api';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 
 const COLORS = ['#065A82', '#02C39A', '#0A7EB5', '#04E4B4', '#1E3055', '#38BDF8', '#818CF8', '#A7F3D0'];
@@ -10,27 +10,35 @@ export function Dashboard() {
   const [data, setData] = useState(null);
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [overviewRes, skillsRes] = await Promise.all([
-          api.getOverview(),
-          api.getSkills(null, null, 10),
-        ]);
-        setData(overviewRes);
-        setSkills(skillsRes);
-      } catch (err) {
-        console.error('Error loading overview:', err);
-      } finally {
-        setLoading(false);
-      }
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [overviewRes, skillsRes] = await Promise.all([
+        api.getOverview(),
+        api.getSkills(null, null, 10),
+      ]);
+      setData(overviewRes);
+      setSkills(skillsRes);
+    } catch (err) {
+      console.error('Error loading overview:', err);
+      setError(err);
+    } finally {
+      setLoading(false);
     }
-    loadData();
-  }, []);
+  };
+
+  useEffect(() => { loadData(); }, []);
 
   if (loading) return <LoadingSpinner text="Analyzing 115,000+ job postings..." />;
+  if (error) return (
+    <div style={{ padding: '40px' }}>
+      <ErrorBanner error={error} onRetry={loadData} />
+    </div>
+  );
 
   const roleData = data?.role_distribution
     ? Object.entries(data.role_distribution).map(([name, value]) => ({ name, value }))
@@ -88,16 +96,16 @@ export function Dashboard() {
       <div className="charts-grid">
         <GlassCard noHover>
           <h3 className="mb-md">🔥 Job Openings by Role Category</h3>
-          <div style={{ height: 320 }}>
+          <div style={{ height: 340 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={roleData}
-                  cx="50%"
+                  cx="40%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={4}
+                  innerRadius={55}
+                  outerRadius={95}
+                  paddingAngle={3}
                   dataKey="value"
                 >
                   {roleData.map((entry, index) => (
@@ -105,7 +113,16 @@ export function Dashboard() {
                   ))}
                 </Pie>
                 <Tooltip
+                  formatter={(val, name) => [`${val.toLocaleString()} jobs`, name]}
                   contentStyle={{ background: '#162040', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
+                />
+                <Legend
+                  layout="vertical"
+                  align="right"
+                  verticalAlign="middle"
+                  iconType="circle"
+                  iconSize={10}
+                  formatter={(value) => <span style={{ fontSize: '0.75rem', color: '#CBD5E1' }}>{value}</span>}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -116,9 +133,9 @@ export function Dashboard() {
           <h3 className="mb-md">⚡ Top 10 In-Demand Tech Skills</h3>
           <div style={{ height: 320 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={skills} layout="vertical" margin={{ left: 40, right: 20, top: 10, bottom: 10 }}>
+              <BarChart data={skills} layout="vertical" margin={{ left: 0, right: 20, top: 10, bottom: 10 }}>
                 <XAxis type="number" stroke="#94A3B8" />
-                <YAxis dataKey="skill" type="category" stroke="#94A3B8" width={90} />
+                <YAxis dataKey="skill" type="category" stroke="#94A3B8" width={110} tick={{ fontSize: 12 }} />
                 <Tooltip
                   contentStyle={{ background: '#162040', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
                 />

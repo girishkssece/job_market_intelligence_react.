@@ -16,9 +16,17 @@ app = FastAPI(
     version="2.0.0",
 )
 
+# Read allowed origins from env (comma-separated), default to localhost for dev
+_raw_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:5173")
+ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "https://careerlens-frontend.onrender.com",
+        "*"  # remove this after testing
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

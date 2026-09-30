@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { PageWrapper, MetricCard, GlassCard, LoadingSpinner, Tabs } from '../components/common/UIComponents';
+import { PageWrapper, MetricCard, GlassCard, LoadingSpinner, ErrorBanner, Tabs } from '../components/common/UIComponents';
 import { api } from '../services/api';
 import { TARGET_ROLES } from '../data/constants';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -8,27 +8,37 @@ export function IndiaMarket() {
   const [data, setData] = useState(null);
   const [activeTab, setActiveTab] = useState('cities');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchRole, setSearchRole] = useState('Data Scientist');
   const [searchCity, setSearchCity] = useState('Bangalore');
 
-  useEffect(() => {
-    async function loadIndia() {
-      try {
-        const res = await api.getIndiaMarket();
-        setData(res);
-      } catch (err) {
-        console.error('Error fetching India market data:', err);
-      } finally {
-        setLoading(false);
-      }
+  const loadIndia = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await api.getIndiaMarket();
+      setData(res);
+    } catch (err) {
+      console.error('Error fetching India market data:', err);
+      setError(err);
+    } finally {
+      setLoading(false);
     }
-    loadIndia();
-  }, []);
+  };
+
+  useEffect(() => { loadIndia(); }, []);
 
   if (loading) return <LoadingSpinner text="Fetching India tech market data from Naukri..." />;
+  if (error) return (
+    <div style={{ padding: '40px' }}>
+      <ErrorBanner error={error} onRetry={loadIndia} />
+    </div>
+  );
 
-  const naukriLink = `https://www.naukri.com/${searchRole.lowerCase ? searchRole.toLowerCase().replace(/ /g, '-') : 'data-scientist'}-jobs-in-${searchCity.toLowerCase()}`;
-  const linkedinLink = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(searchRole)}&location=${encodeURIComponent(searchCity)}`;
+  const naukriSlug = searchRole.toLowerCase().replace(/ /g, '-').replace(/\//g, '-');
+  const naukriLink = `https://www.naukri.com/${naukriSlug}-jobs-in-${searchCity.toLowerCase()}`;
+  const linkedinLink = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(searchRole)}&location=${encodeURIComponent(searchCity + ', India')}`;
+
 
   return (
     <PageWrapper
@@ -59,9 +69,9 @@ export function IndiaMarket() {
             <h3 className="mb-md">Top Cities by Job Openings</h3>
             <div style={{ height: 380 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data?.city_counts || []} layout="vertical" margin={{ left: 50, right: 20 }}>
+                <BarChart data={data?.city_counts || []} layout="vertical" margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
                   <XAxis type="number" stroke="#94A3B8" />
-                  <YAxis dataKey="city" type="category" stroke="#94A3B8" width={90} />
+                  <YAxis dataKey="city" type="category" stroke="#94A3B8" width={130} tick={{ fontSize: 12 }} />
                   <Tooltip contentStyle={{ background: '#162040', border: '1px solid rgba(255,255,255,0.1)' }} />
                   <Bar dataKey="count" fill="#065A82" radius={[0, 4, 4, 0]} />
                 </BarChart>
@@ -73,9 +83,9 @@ export function IndiaMarket() {
             <h3 className="mb-md">Median Salary by City (INR LPA)</h3>
             <div style={{ height: 380 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data?.city_salary || []} layout="vertical" margin={{ left: 50, right: 20 }}>
+                <BarChart data={data?.city_salary || []} layout="vertical" margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
                   <XAxis type="number" stroke="#94A3B8" tickFormatter={(v) => `₹${v}L`} />
-                  <YAxis dataKey="city" type="category" stroke="#94A3B8" width={90} />
+                  <YAxis dataKey="city" type="category" stroke="#94A3B8" width={130} tick={{ fontSize: 12 }} />
                   <Tooltip
                     formatter={(val) => [`₹${val} LPA`, 'Median Salary']}
                     contentStyle={{ background: '#162040', border: '1px solid rgba(255,255,255,0.1)' }}
