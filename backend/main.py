@@ -25,7 +25,6 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "https://careerlens-frontend.onrender.com",
-        "*"  # remove this after testing
     ],
     allow_credentials=True,
     allow_methods=["*"],
