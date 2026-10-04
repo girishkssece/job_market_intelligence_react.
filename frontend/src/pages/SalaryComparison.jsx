@@ -17,7 +17,7 @@ import {
   GlassCard,
   MetricCard,
   LoadingSpinner,
-} from "../components/common/ui";
+} from "../components/common/UIComponents";
 import { api } from "../services/api";
 
 const ROLES = [
