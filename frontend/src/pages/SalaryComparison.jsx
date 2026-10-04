@@ -18,6 +18,7 @@ import {
   MetricCard,
   LoadingSpinner,
 } from "../components/common/UIComponents";
+import { JobSearchLinks } from '../components/common/JobSearchLinks';
 import { api } from "../services/api";
 
 const ROLES = [
@@ -591,6 +592,8 @@ export function SalaryComparison() {
               )}
             </div>
           </GlassCard>
+
+          {result && <JobSearchLinks defaultRole={result.role} />}
 
           {/* ── EXPERIENCE TRAJECTORY ── */}
           {result.experience_data && result.experience_data.length > 0 && (

@@ -22,6 +22,7 @@ import {
   LoadingSpinner,
   Tabs,
 } from "../components/common/UIComponents";
+import { JobSearchLinks } from '../components/common/JobSearchLinks';
 import { api } from "../services/api";
 
 const ROLES = [
@@ -427,6 +428,8 @@ export function SkillForecasting() {
               ))}
             </div>
           </GlassCard>
+
+          <JobSearchLinks defaultRole={role === 'All Roles' ? 'Data Scientist' : role} />
 
           {/* ── HONEST DISCLAIMER ── */}
           <div

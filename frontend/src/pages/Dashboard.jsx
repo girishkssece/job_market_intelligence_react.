@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { PageWrapper, MetricCard, GlassCard, LoadingSpinner, ErrorBanner } from '../components/common/UIComponents';
+import { JobSearchLinks } from '../components/common/JobSearchLinks';
 import { api } from '../services/api';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis } from 'recharts';
 import { useNavigate } from 'react-router-dom';
@@ -147,6 +148,10 @@ export function Dashboard() {
       </div>
 
       <div className="section-divider" />
+
+      <GlassCard noHover>
+        <JobSearchLinks compact={true} defaultRole="Data Scientist" />
+      </GlassCard>
 
       <h2 className="mb-lg">🚀 AI Career Intelligence Suite</h2>
       <div className="form-row stagger-children">

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { PageWrapper, MetricCard, GlassCard, LoadingSpinner, ErrorBanner, Tabs } from '../components/common/UIComponents';
+import { JobSearchLinks } from '../components/common/JobSearchLinks';
 import { api } from '../services/api';
 import { TARGET_ROLES } from '../data/constants';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -195,6 +196,8 @@ export function IndiaMarket() {
           </a>
         </div>
       </GlassCard>
+
+      <JobSearchLinks defaultRole="Data Scientist" />
     </PageWrapper>
   );
 }

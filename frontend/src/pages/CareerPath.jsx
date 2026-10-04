@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PageWrapper, GlassCard, LoadingSpinner, ErrorBanner } from '../components/common/UIComponents';
+import { JobSearchLinks } from '../components/common/JobSearchLinks';
 import { api } from '../services/api';
 import { TARGET_ROLES } from '../data/constants';
 
@@ -95,14 +96,20 @@ export function CareerPath() {
           <ErrorBanner error={error} />
         </GlassCard>
       ) : result ? (
-        <GlassCard noHover>
-          <div className="ai-result">{result}</div>
-        </GlassCard>
+        <>
+          <GlassCard noHover>
+            <div className="ai-result">{result}</div>
+          </GlassCard>
+          <JobSearchLinks defaultRole={targetRole} />
+        </>
       ) : (
-        <GlassCard noHover className="text-center" style={{ padding: '40px' }}>
-          <h3>🎯 Ready to Plan Your Progression?</h3>
-          <p className="text-muted mt-md">Select your starting role and goal role above to receive a step-by-step transition roadmap.</p>
-        </GlassCard>
+        <>
+          <GlassCard noHover className="text-center" style={{ padding: '40px' }}>
+            <h3>🎯 Ready to Plan Your Progression?</h3>
+            <p className="text-muted mt-md">Select your starting role and goal role above to receive a step-by-step transition roadmap.</p>
+          </GlassCard>
+          <JobSearchLinks defaultRole={targetRole} />
+        </>
       )}
     </PageWrapper>
   );
