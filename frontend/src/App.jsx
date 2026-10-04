@@ -23,6 +23,7 @@ import { PortfolioProjects } from "./pages/PortfolioProjects";
 import { ResumeRewriter } from "./pages/ResumeRewriter";
 import { ExportReport } from "./pages/ExportReport";
 import { SalaryComparison } from "./pages/SalaryComparison";
+import { SkillForecasting } from "./pages/SkillForecasting";
 
 // Separate component so we can use useLocation inside Router
 function AppLayout() {
@@ -79,6 +80,7 @@ function AppLayout() {
           <Route path="/resume-rewriter" element={<ResumeRewriter />} />
           <Route path="/export-report" element={<ExportReport />} />
           <Route path="/salary-comparison" element={<SalaryComparison />} />
+          <Route path="/skill-forecasting" element={<SkillForecasting />} />
         </Routes>
       </main>
     </div>

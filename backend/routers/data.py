@@ -136,3 +136,86 @@ def salary_comparison(
         "lpa_p75":         round(p75 / 1200, 1),
         "experience_data": exp_data,
     }
+@router.get("/skill-trends")
+def skill_trends(
+    role: str = Query(None),
+    region: str = Query(None),
+    top_n: int = Query(15),
+):
+    from services.data_service import get_dataframe, clean_skills
+    from collections import Counter
+
+    df = get_dataframe()
+
+    # Filter
+    filtered = df.copy()
+    if role and role != "All Roles":
+        filtered = filtered[filtered["role_category"] == role]
+    if region and region == "India":
+        filtered = filtered[filtered["region"] == "India"]
+
+    # Split into two halves — simulate trend
+    # First half = older postings, second half = newer postings
+    mid = len(filtered) // 2
+    older = filtered.iloc[:mid]
+    newer = filtered.iloc[mid:]
+
+    def get_skill_counts(data, n=top_n * 2):
+        all_skills = []
+        for skills in data["skills_parsed"]:
+            all_skills.extend(clean_skills(skills))
+        return Counter(all_skills)
+
+    older_counts = get_skill_counts(older)
+    newer_counts = get_skill_counts(newer)
+
+    # Get top skills from newer data
+    top_skills = [s for s, _ in newer_counts.most_common(top_n * 2)]
+
+    trends = []
+    for skill in top_skills:
+        old_c = older_counts.get(skill, 0)
+        new_c = newer_counts.get(skill, 0)
+        total = old_c + new_c
+
+        if total < 5:
+            continue
+
+        # Growth rate
+        if old_c == 0:
+            growth = 100.0
+        else:
+            growth = round(((new_c - old_c) / old_c) * 100, 1)
+
+        # Trend label
+        if growth >= 20:
+            trend = "rising"
+        elif growth <= -20:
+            trend = "declining"
+        else:
+            trend = "stable"
+
+        trends.append({
+            "skill":       skill,
+            "older_count": old_c,
+            "newer_count": new_c,
+            "total":       total,
+            "growth_pct":  growth,
+            "trend":       trend,
+        })
+
+    # Sort by total demand
+    trends = sorted(trends, key=lambda x: x["total"], reverse=True)[:top_n]
+
+    # Separate rising and declining
+    rising   = sorted([t for t in trends if t["trend"] == "rising"],
+                      key=lambda x: x["growth_pct"], reverse=True)[:5]
+    declining = sorted([t for t in trends if t["trend"] == "declining"],
+                       key=lambda x: x["growth_pct"])[:5]
+
+    return {
+        "trends":   trends,
+        "rising":   rising,
+        "declining": declining,
+        "total_skills": len(trends),
+    }

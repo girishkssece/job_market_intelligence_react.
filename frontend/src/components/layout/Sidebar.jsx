@@ -1,57 +1,91 @@
-import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { NavLink } from "react-router-dom";
 
 const navItems = [
-  { group: 'Overview', items: [
-    { path: '/dashboard', label: 'Dashboard', icon: '🏠' },
-    { path: '/market-overview', label: 'Market Overview', icon: '📊' },
-    { path: '/india-market', label: 'India Market', icon: '🇮🇳' },
-    { path: '/global-market', label: 'Global Market', icon: '🌐' },
-  ]},
-  { group: 'Analytics & ML', items: [
-    { path: '/salary-predictor', label: 'Salary Predictor', icon: '💰' },
-    { path: '/company-intelligence', label: 'Company Intelligence', icon: '🏢' },
-    { path: '/career-path', label: 'Career Path Explorer', icon: '🗺️' },
-    { path: '/salary-comparison', label: 'Salary Comparison', icon: '⚖️' },
-  ]},
-  { group: 'AI Career Tools', items: [
-    { path: '/resume-analyzer', label: 'Resume Analyzer', icon: '🔍' },
-    { path: '/resume-rewriter', label: 'Resume Rewriter', icon: '✍️' },
-    { path: '/salary-negotiation', label: 'Salary Negotiation', icon: '🤝' },
-    { path: '/interview-prep', label: 'Interview Prep', icon: '🎯' },
-    { path: '/market-chatbot', label: 'Market Chatbot', icon: '🤖' },
-  ]},
-  { group: 'Growth & Resources', items: [
-    { path: '/course-recommendations', label: 'Course Recommendations', icon: '📚' },
-    { path: '/portfolio-projects', label: 'Portfolio Projects', icon: '🚀' },
-    { path: '/export-report', label: 'Export PDF Report', icon: '📊' },
-  ]}
+  {
+    group: "Overview",
+    items: [
+      { path: "/dashboard", label: "Dashboard", icon: "🏠" },
+      { path: "/market-overview", label: "Market Overview", icon: "📊" },
+      { path: "/india-market", label: "India Market", icon: "🇮🇳" },
+      { path: "/global-market", label: "Global Market", icon: "🌐" },
+    ],
+  },
+  {
+    group: "Analytics & ML",
+    items: [
+      { path: "/salary-predictor", label: "Salary Predictor", icon: "💰" },
+      {
+        path: "/company-intelligence",
+        label: "Company Intelligence",
+        icon: "🏢",
+      },
+      { path: "/skill-forecasting", label: "Skill Forecasting", icon: "📈" },
+      { path: "/career-path", label: "Career Path Explorer", icon: "🗺️" },
+      { path: "/salary-comparison", label: "Salary Comparison", icon: "⚖️" },
+    ],
+  },
+  {
+    group: "AI Career Tools",
+    items: [
+      { path: "/resume-analyzer", label: "Resume Analyzer", icon: "🔍" },
+      { path: "/resume-rewriter", label: "Resume Rewriter", icon: "✍️" },
+      { path: "/salary-negotiation", label: "Salary Negotiation", icon: "🤝" },
+      { path: "/interview-prep", label: "Interview Prep", icon: "🎯" },
+      { path: "/market-chatbot", label: "Market Chatbot", icon: "🤖" },
+    ],
+  },
+  {
+    group: "Growth & Resources",
+    items: [
+      {
+        path: "/course-recommendations",
+        label: "Course Recommendations",
+        icon: "📚",
+      },
+      { path: "/portfolio-projects", label: "Portfolio Projects", icon: "🚀" },
+      { path: "/export-report", label: "Export PDF Report", icon: "📊" },
+    ],
+  },
 ];
 
 export function Sidebar({ isOpen, onClose }) {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'dark';
+    return localStorage.getItem("theme") || "dark";
   });
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
   return (
     <>
-      <div className={`mobile-overlay ${isOpen ? 'show' : ''}`} onClick={onClose} />
-      <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
-        <div className="sidebar-logo flex justify-between items-center" style={{ paddingRight: '16px' }}>
+      <div
+        className={`mobile-overlay ${isOpen ? "show" : ""}`}
+        onClick={onClose}
+      />
+      <aside className={`sidebar ${isOpen ? "open" : ""}`}>
+        <div
+          className="sidebar-logo flex justify-between items-center"
+          style={{ paddingRight: "16px" }}
+        >
           <div className="flex items-center gap-sm">
             <div className="logo-icon">🧠</div>
             <div>
               <h1>CareerLens</h1>
-              <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', display: 'block', marginTop: '-4px' }}>
+              <span
+                style={{
+                  fontSize: "0.65rem",
+                  color: "var(--text-muted)",
+                  display: "block",
+                  marginTop: "-4px",
+                }}
+              >
                 Job Market Intelligence
               </span>
             </div>
@@ -60,20 +94,20 @@ export function Sidebar({ isOpen, onClose }) {
           <button
             onClick={toggleTheme}
             style={{
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-default)',
-              color: 'var(--text-primary)',
-              borderRadius: '8px',
-              padding: '6px 10px',
-              fontSize: '0.8rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-default)",
+              color: "var(--text-primary)",
+              borderRadius: "8px",
+              padding: "6px 10px",
+              fontSize: "0.8rem",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
             }}
             title="Toggle Light/Dark Theme"
           >
-            {theme === 'dark' ? '☀️' : '🌙'}
+            {theme === "dark" ? "☀️" : "🌙"}
           </button>
         </div>
 
@@ -85,8 +119,10 @@ export function Sidebar({ isOpen, onClose }) {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  end={item.path === '/'}
-                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                  end={item.path === "/"}
+                  className={({ isActive }) =>
+                    `nav-link ${isActive ? "active" : ""}`
+                  }
                   onClick={onClose}
                 >
                   <span className="nav-icon">{item.icon}</span>
@@ -101,28 +137,52 @@ export function Sidebar({ isOpen, onClose }) {
           <button
             onClick={toggleTheme}
             style={{
-              width: '100%',
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-default)',
-              color: 'var(--text-primary)',
-              borderRadius: '8px',
-              padding: '8px 12px',
-              fontSize: '0.8rem',
-              cursor: 'pointer',
-              marginBottom: '10px',
+              width: "100%",
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-default)",
+              color: "var(--text-primary)",
+              borderRadius: "8px",
+              padding: "8px 12px",
+              fontSize: "0.8rem",
+              cursor: "pointer",
+              marginBottom: "10px",
               fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "6px",
             }}
           >
-            {theme === 'dark' ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode'}
+            {theme === "dark"
+              ? "☀️ Switch to Light Mode"
+              : "🌙 Switch to Dark Mode"}
           </button>
 
-          <NavLink to="/" onClick={onClose} style={{ display: 'block', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '10px', textDecoration: 'none', padding: '6px', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>← Back to Home Page</NavLink>
+          <NavLink
+            to="/"
+            onClick={onClose}
+            style={{
+              display: "block",
+              textAlign: "center",
+              color: "var(--text-muted)",
+              fontSize: "0.75rem",
+              marginBottom: "10px",
+              textDecoration: "none",
+              padding: "6px",
+              borderRadius: "6px",
+              border: "1px solid var(--border-subtle)",
+            }}
+          >
+            ← Back to Home Page
+          </NavLink>
           <p>CareerLens v2.0 • React</p>
-          <p style={{ fontSize: '0.6rem', marginTop: '2px', color: 'var(--text-muted)' }}>
+          <p
+            style={{
+              fontSize: "0.6rem",
+              marginTop: "2px",
+              color: "var(--text-muted)",
+            }}
+          >
             115,000+ Job Postings
           </p>
         </div>
