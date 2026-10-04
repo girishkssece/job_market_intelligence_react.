@@ -12,6 +12,7 @@ const navItems = [
     { path: '/salary-predictor', label: 'Salary Predictor', icon: '💰' },
     { path: '/company-intelligence', label: 'Company Intelligence', icon: '🏢' },
     { path: '/career-path', label: 'Career Path Explorer', icon: '🗺️' },
+    { path: '/salary-comparison', label: 'Salary Comparison', icon: '⚖️' },
   ]},
   { group: 'AI Career Tools', items: [
     { path: '/resume-analyzer', label: 'Resume Analyzer', icon: '🔍' },

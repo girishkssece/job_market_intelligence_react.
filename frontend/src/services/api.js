@@ -94,5 +94,14 @@ export const api = {
     });
     if (!response.ok) throw new Error('PDF Generation failed');
     return await response.blob();
-  }
+  },
+  getSalaryComparison: (role, experience, currentSalary, region) => {
+    const params = new URLSearchParams({
+      role,
+      experience,
+      current_salary: currentSalary,
+      region: region || 'Global'
+    });
+    return fetchJson(`/salary-comparison?${params.toString()}`);
+  },
 };

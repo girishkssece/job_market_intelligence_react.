@@ -75,3 +75,64 @@ def experience_analysis(role: str = Query(None)):
 @router.get("/roles")
 def roles():
     return TARGET_ROLES
+@router.get("/salary-comparison")
+def salary_comparison(
+    role: str = Query(...),
+    experience: float = Query(...),
+    current_salary: float = Query(...),
+    region: str = Query("Global"),
+):
+    from services.data_service import get_salary_data, get_experience_analysis
+    
+    # Get market data for this role
+    market = get_salary_data(role=role, region=region)
+    exp_data = get_experience_analysis(role=role)
+    
+    if market.get("insufficient"):
+        return {"error": "Not enough market data for this role"}
+    
+    median = market["median"]
+    p25    = market["p25"]
+    p75    = market["p75"]
+    p90    = market["p90"]
+    
+    # Position
+    if current_salary <= 0:
+        position = "fresher"
+        percentile = 0
+    elif current_salary < p25:
+        position = "underpaid"
+        percentile = 10
+    elif current_salary < median:
+        position = "below_median"
+        percentile = 35
+    elif current_salary < p75:
+        position = "above_median"
+        percentile = 65
+    elif current_salary < p90:
+        position = "top_25"
+        percentile = 80
+    else:
+        position = "top_10"
+        percentile = 95
+    
+    # Gap analysis
+    gap_to_median = median - current_salary
+    gap_to_p75    = p75 - current_salary
+    increase_pct  = ((median - current_salary) / current_salary * 100) if current_salary > 0 else 0
+    
+    return {
+        "role":            role,
+        "region":          region,
+        "current_salary":  current_salary,
+        "market":          market,
+        "position":        position,
+        "percentile":      percentile,
+        "gap_to_median":   round(gap_to_median, 0),
+        "gap_to_p75":      round(gap_to_p75, 0),
+        "increase_pct":    round(increase_pct, 1),
+        "lpa_current":     round(current_salary / 1200, 1),
+        "lpa_median":      round(median / 1200, 1),
+        "lpa_p75":         round(p75 / 1200, 1),
+        "experience_data": exp_data,
+    }

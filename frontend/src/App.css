@@ -167,7 +167,7 @@
 
   &::before,
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     top: -4.5px;
     border: 5px solid transparent;
@@ -181,4 +181,37 @@
     right: 0;
     border-right-color: var(--border);
   }
+}
+
+.advice-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+}
+.advice-card strong {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: var(--text-primary);
+}
+.advice-card p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+.advice-urgent {
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.08);
+}
+.advice-success {
+  border-color: #02c39a;
+  background: rgba(2, 195, 154, 0.08);
+}
+.error-banner {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid #ff6b6b;
+  border-radius: 10px;
+  padding: 1rem;
+  color: #ff6b6b;
+  margin-bottom: 1rem;
 }
