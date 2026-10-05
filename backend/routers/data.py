@@ -219,3 +219,51 @@ def skill_trends(
         "declining": declining,
         "total_skills": len(trends),
     }
+
+@router.get("/data-freshness")
+def data_freshness():
+    from services.data_service import get_dataframe
+    import os
+
+    df = get_dataframe()
+
+    # Get file modification time
+    csv_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        "data", "processed", "master_jobs.csv"
+    )
+    
+    last_updated = None
+    if os.path.exists(csv_path):
+        import datetime
+        mtime = os.path.getmtime(csv_path)
+        last_updated = datetime.datetime.fromtimestamp(mtime).strftime("%B %d, %Y")
+
+    # Data stats
+    india = df[df["region"] == "India"]
+    
+    return {
+        "last_updated":     last_updated or "Unknown",
+        "total_records":    len(df),
+        "india_records":    len(india),
+        "global_records":   len(df) - len(india),
+        "salary_records":   int(df["salary_usd"].notna().sum()),
+        "unique_companies": int(df["company_name"].nunique()),
+        "unique_roles":     int(df["role_category"].nunique()),
+        "sources": [
+            {
+                "name":    "Naukri.com",
+                "type":    "Live Scraping",
+                "records": int(len(df[df["source"] == "naukri"])),
+                "coverage": "India",
+                "icon":    "🔴"
+            },
+            {
+                "name":    "LinkedIn (Kaggle)",
+                "type":    "Dataset",
+                "records": int(len(df[df["source"] == "linkedin"])),
+                "coverage": "Global",
+                "icon":    "🔵"
+            }
+        ]
+    }

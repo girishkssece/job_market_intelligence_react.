@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
+import { DataFreshnessBadge } from '../common/DataFreshness';
 
 const navItems = [
   {
@@ -134,6 +135,8 @@ export function Sidebar({ isOpen, onClose }) {
         </nav>
 
         <div className="sidebar-footer">
+          <DataFreshnessBadge />
+
           <button
             onClick={toggleTheme}
             style={{
@@ -145,6 +148,7 @@ export function Sidebar({ isOpen, onClose }) {
               padding: "8px 12px",
               fontSize: "0.8rem",
               cursor: "pointer",
+              marginTop: "0.75rem",
               marginBottom: "10px",
               fontWeight: 600,
               display: "flex",
@@ -175,15 +179,9 @@ export function Sidebar({ isOpen, onClose }) {
           >
             ← Back to Home Page
           </NavLink>
-          <p>CareerLens v2.0 • React</p>
-          <p
-            style={{
-              fontSize: "0.6rem",
-              marginTop: "2px",
-              color: "var(--text-muted)",
-            }}
-          >
-            115,000+ Job Postings
+
+          <p style={{ fontSize: '0.65rem', marginTop: '0.5rem', color: 'var(--text-muted)' }}>
+            CareerLens v2.0 · React + FastAPI
           </p>
         </div>
       </aside>

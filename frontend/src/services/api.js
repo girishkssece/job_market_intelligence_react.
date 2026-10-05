@@ -63,6 +63,7 @@ export const api = {
   getExperienceAnalysis: (role) =>
     fetchJson(`/experience-analysis${role ? `?role=${role}` : ""}`),
   getRoles: () => fetchJson("/roles"),
+  getDataFreshness: () => fetchJson("/data-freshness"),
 
   // ML endpoint
   predictSalary: (data) =>
