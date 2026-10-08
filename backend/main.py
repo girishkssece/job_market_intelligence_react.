@@ -7,6 +7,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
+from database import create_tables
+from routers import data, predict, ai, export, auth
 
 load_dotenv()
 
@@ -16,28 +18,29 @@ app = FastAPI(
     version="2.0.0",
 )
 
+create_tables()
+
 # Read allowed origins from env (comma-separated), default to localhost for dev
-_raw_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:5173")
+_raw_origins = os.environ.get(
+    "ALLOWED_ORIGINS",
+    "http://localhost:5173,https://careerlens-frontend.onrender.com"
+)
 ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "https://careerlens-frontend.onrender.com",
-    ],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # ── Register routers ────────────────────────────────────────────────────────
-from routers import data, predict, ai, export
-
 app.include_router(data.router,    prefix="/api", tags=["Data"])
 app.include_router(predict.router, prefix="/api", tags=["Predict"])
-app.include_router(ai.router,     prefix="/api", tags=["AI"])
+app.include_router(ai.router,      prefix="/api", tags=["AI"])
 app.include_router(export.router,  prefix="/api", tags=["Export"])
+app.include_router(auth.router,    prefix="/api", tags=["Auth"])
 
 
 @app.get("/")

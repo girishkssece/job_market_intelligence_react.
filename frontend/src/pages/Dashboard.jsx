@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { PageWrapper, MetricCard, GlassCard, LoadingSpinner, ErrorBanner } from '../components/common/UIComponents';
+import { PageWrapper, MetricCard, GlassCard, ErrorBanner } from '../components/common/UIComponents';
+import { DashboardSkeleton } from '../components/common/Skeletons';
 import { JobSearchLinks } from '../components/common/JobSearchLinks';
 import { api } from '../services/api';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis } from 'recharts';
@@ -34,7 +35,7 @@ export function Dashboard() {
 
   useEffect(() => { loadData(); }, []);
 
-  if (loading) return <LoadingSpinner text="Analyzing 115,000+ job postings..." />;
+  if (loading) return <DashboardSkeleton />;
   if (error) return (
     <div style={{ padding: '40px' }}>
       <ErrorBanner error={error} onRetry={loadData} />

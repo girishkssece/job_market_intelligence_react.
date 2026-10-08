@@ -20,7 +20,7 @@ export function ResumeAnalyzer() {
       const score = parseInt(match[1], 10);
       return score <= 100 ? score : 75;
     }
-    return 72; // default reasonable fallback
+    return null; // no score found — don't show a misleading number
   };
 
   const handleFileUpload = async (e) => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { DataFreshnessBadge } from '../common/DataFreshness';
+import { useAuth } from '../../context/AuthContext';
 
 const navItems = [
   {
@@ -54,6 +55,8 @@ export function Sidebar({ isOpen, onClose }) {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("theme") || "dark";
   });
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -91,25 +94,6 @@ export function Sidebar({ isOpen, onClose }) {
               </span>
             </div>
           </div>
-
-          <button
-            onClick={toggleTheme}
-            style={{
-              background: "var(--bg-surface)",
-              border: "1px solid var(--border-default)",
-              color: "var(--text-primary)",
-              borderRadius: "8px",
-              padding: "6px 10px",
-              fontSize: "0.8rem",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-            }}
-            title="Toggle Light/Dark Theme"
-          >
-            {theme === "dark" ? "☀️" : "🌙"}
-          </button>
         </div>
 
         <nav className="sidebar-nav">
@@ -179,6 +163,38 @@ export function Sidebar({ isOpen, onClose }) {
           >
             ← Back to Home Page
           </NavLink>
+
+          {user && (
+            <div style={{ marginTop: '0.5rem' }}>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '6px', textAlign: 'center' }}>
+                👤 {user.name || user.email}
+              </div>
+              <button
+                onClick={() => {
+                  logout();
+                  onClose();
+                  navigate('/login');
+                }}
+                style={{
+                  width: '100%',
+                  background: 'rgba(239,68,68,0.08)',
+                  border: '1px solid rgba(239,68,68,0.25)',
+                  color: '#F87171',
+                  borderRadius: '8px',
+                  padding: '8px 12px',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                }}
+              >
+                🚪 Sign Out
+              </button>
+            </div>
+          )}
 
           <p style={{ fontSize: '0.65rem', marginTop: '0.5rem', color: 'var(--text-muted)' }}>
             CareerLens v2.0 · React + FastAPI

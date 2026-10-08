@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { PageWrapper, MetricCard, GlassCard, LoadingSpinner, ErrorBanner, Tabs } from '../components/common/UIComponents';
+import { PageSkeleton } from '../components/common/Skeletons';
 import { api } from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 
@@ -50,7 +51,7 @@ export function GlobalMarket() {
     loadCountryDetail();
   }, [selectedCountry]);
 
-  if (loading) return <LoadingSpinner text="Fetching country-by-country global market data..." />;
+  if (loading) return <PageSkeleton hasMetrics hasChart hasTable />;
   if (error) return (
     <div style={{ padding: '40px' }}>
       <ErrorBanner error={error} onRetry={loadGlobal} />

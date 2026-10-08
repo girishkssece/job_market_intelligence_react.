@@ -82,7 +82,12 @@ export function CareerPath() {
           </div>
 
           <div className="form-group" style={{ alignSelf: 'flex-end' }}>
-            <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+            {currentRole === targetRole && (
+              <p style={{ fontSize: '0.8rem', color: '#F59E0B', marginBottom: '6px' }}>
+                ⚠️ Current and target roles must be different.
+              </p>
+            )}
+            <button type="submit" className="btn btn-primary btn-block" disabled={loading || currentRole === targetRole}>
               {loading ? 'Mapping Path...' : '🚀 Generate Path'}
             </button>
           </div>

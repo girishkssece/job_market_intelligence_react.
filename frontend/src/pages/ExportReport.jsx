@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
-import { PageWrapper, GlassCard, LoadingSpinner } from '../components/common/UIComponents';
+import { PageWrapper, GlassCard, LoadingSpinner, ErrorBanner } from '../components/common/UIComponents';
 import { api } from '../services/api';
 import { TARGET_ROLES } from '../data/constants';
+import { useAuth } from '../context/AuthContext';
 
 export function ExportReport() {
+  const { user } = useAuth();
   const [role, setRole] = useState('Data Scientist');
   const [region, setRegion] = useState('Global');
-  const [userName, setUserName] = useState('');
+  const [userName, setUserName] = useState(user?.name || '');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleDownload = async (e) => {
     e.preventDefault();
     setLoading(true);
     setSuccess(false);
+    setError(null);
     try {
       const blob = await api.exportReport({
         role,
@@ -32,6 +36,7 @@ export function ExportReport() {
       setSuccess(true);
     } catch (err) {
       console.error('PDF export failed:', err);
+      setError('Failed to generate PDF. Please ensure the backend is running and try again.');
     } finally {
       setLoading(false);
     }
@@ -77,6 +82,8 @@ export function ExportReport() {
             <button type="submit" className="btn btn-primary btn-lg mt-md" disabled={loading}>
               {loading ? 'Generating PDF...' : '📥 Generate & Download PDF'}
             </button>
+
+            {error && <ErrorBanner error={error} />}
 
             {success && (
               <div className="badge badge-accent mt-sm" style={{ padding: '10px 14px' }}>

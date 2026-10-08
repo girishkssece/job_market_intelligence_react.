@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { PageWrapper, GlassCard, LoadingSpinner, ErrorBanner, Tabs } from '../components/common/UIComponents';
+import { PageWrapper, GlassCard, ErrorBanner, Tabs } from '../components/common/UIComponents';
+import { PageSkeleton } from '../components/common/Skeletons';
 import { api } from '../services/api';
 import { TARGET_ROLES } from '../data/constants';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line } from 'recharts';
@@ -86,7 +87,7 @@ export function MarketOverview() {
       />
 
       {loading ? (
-        <LoadingSpinner />
+        <PageSkeleton hasMetrics={false} hasChart hasTable />
       ) : error ? (
         <ErrorBanner error={error} onRetry={loadMarketData} />
       ) : (

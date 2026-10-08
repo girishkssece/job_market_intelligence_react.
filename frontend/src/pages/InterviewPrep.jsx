@@ -149,6 +149,17 @@ export function InterviewPrep() {
                 </select>
               </div>
 
+              <div className="form-group">
+                <label className="form-label">Question Type</label>
+                <select className="form-select" value={qType} onChange={(e) => setQType(e.target.value)}>
+                  <option value="All Types">All Types</option>
+                  <option value="Technical">Technical</option>
+                  <option value="Behavioral">Behavioral</option>
+                  <option value="System Design">System Design</option>
+                  <option value="Case Study">Case Study</option>
+                </select>
+              </div>
+
               <button type="submit" className="btn btn-primary btn-lg" disabled={loading}>
                 {loading ? 'Generating...' : '🤖 Generate Mock Interview'}
               </button>

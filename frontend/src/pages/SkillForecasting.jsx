@@ -22,6 +22,7 @@ import {
   LoadingSpinner,
   Tabs,
 } from "../components/common/UIComponents";
+import { ChartsGridSkeleton, MetricsGridSkeleton } from '../components/common/Skeletons';
 import { JobSearchLinks } from '../components/common/JobSearchLinks';
 import { api } from "../services/api";
 
@@ -121,14 +122,19 @@ export function SkillForecasting() {
             </select>
           </div>
           <div style={{ alignSelf: "flex-end" }}>
-            <button className="btn-primary" onClick={fetchData}>
+            <button className="btn btn-primary" onClick={fetchData}>
               🔄 Refresh
             </button>
           </div>
         </div>
       </GlassCard>
 
-      {loading && <LoadingSpinner text="Analyzing skill trends..." />}
+      {loading && (
+        <>
+          <MetricsGridSkeleton count={4} />
+          <ChartsGridSkeleton />
+        </>
+      )}
       {error && <div className="error-banner">❌ {error}</div>}
 
       {data && !loading && (

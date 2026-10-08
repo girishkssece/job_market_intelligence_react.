@@ -175,7 +175,7 @@ export function SalaryComparison() {
 
           <div style={{ display: "flex", alignItems: "flex-end" }}>
             <button
-              className="btn-primary"
+              className="btn btn-primary"
               onClick={handleAnalyze}
               disabled={loading || !currentSal}
               style={{ width: "100%" }}

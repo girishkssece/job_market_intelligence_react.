@@ -89,7 +89,7 @@ export function SalaryNegotiation() {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label className="form-label">Current / Offered ($)</label>
+                  <label className="form-label">Current / Offered ($ / ₹)</label>
                   <input
                     type="number"
                     className="form-input"
@@ -98,7 +98,7 @@ export function SalaryNegotiation() {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Target Salary ($)</label>
+                  <label className="form-label">Target Salary ($ / ₹)</label>
                   <input
                     type="number"
                     className="form-input"

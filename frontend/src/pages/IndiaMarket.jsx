@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { PageWrapper, MetricCard, GlassCard, LoadingSpinner, ErrorBanner, Tabs } from '../components/common/UIComponents';
+import { PageWrapper, MetricCard, GlassCard, ErrorBanner, Tabs } from '../components/common/UIComponents';
+import { PageSkeleton } from '../components/common/Skeletons';
 import { JobSearchLinks } from '../components/common/JobSearchLinks';
 import { api } from '../services/api';
 import { TARGET_ROLES } from '../data/constants';
@@ -29,7 +30,7 @@ export function IndiaMarket() {
 
   useEffect(() => { loadIndia(); }, []);
 
-  if (loading) return <LoadingSpinner text="Fetching India tech market data from Naukri..." />;
+  if (loading) return <PageSkeleton hasMetrics hasChart hasTable />;
   if (error) return (
     <div style={{ padding: '40px' }}>
       <ErrorBanner error={error} onRetry={loadIndia} />

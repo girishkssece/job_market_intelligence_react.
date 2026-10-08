@@ -36,7 +36,7 @@ export function MarketChatbot() {
 
     const newMessages = [...messages, { role: 'user', content: query }];
     setMessages(newMessages);
-    if (!textToSend) setInput('');
+    setInput(''); // always clear input, whether from chip or typed
     setLoading(true);
 
     try {

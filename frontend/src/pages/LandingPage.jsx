@@ -229,10 +229,10 @@ function CTASection({ navigate }) {
           <div style={styles.ctaButtons}>
             <button
               style={styles.ctaPrimary}
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/signup')}
               className="cta-btn-hover"
             >
-              🚀 Start for Free — No Signup Needed
+              🚀 Create Free Account
             </button>
             <button
               style={styles.ctaSecondary}
@@ -241,7 +241,7 @@ function CTASection({ navigate }) {
               💰 Predict My Salary
             </button>
           </div>
-          <p style={styles.ctaNote}>✓ Free to use &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ 115,000+ job records</p>
+          <p style={styles.ctaNote}>✓ Free account &nbsp;·&nbsp; ✓ No credit card &nbsp;·&nbsp; ✓ 115,000+ job records</p>
         </div>
       </div>
     </section>
@@ -290,8 +290,8 @@ function Navbar({ navigate }) {
           >
             {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
           </button>
-          <button style={styles.navCta} onClick={() => navigate('/dashboard')}>
-            Open App →
+          <button style={styles.navCta} onClick={() => navigate('/signup')}>
+            Get Started →
           </button>
         </div>
       </div>
@@ -326,8 +326,8 @@ function Hero({ navigate }) {
         </p>
 
         <div style={styles.heroButtons}>
-          <button style={styles.heroPrimary} onClick={() => navigate('/dashboard')} className="cta-btn-hover">
-            🚀 Explore the Platform — It's Free
+          <button style={styles.heroPrimary} onClick={() => navigate('/signup')} className="cta-btn-hover">
+            🚀 Get Started — It's Free
           </button>
           <button style={styles.heroSecondary} onClick={() => navigate('/salary-predictor')}>
             💰 Predict My Salary

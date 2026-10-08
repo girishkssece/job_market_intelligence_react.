@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { PageWrapper, GlassCard, LoadingSpinner, ErrorBanner, MetricCard, Tabs } from '../components/common/UIComponents';
+import { PageSkeleton } from '../components/common/Skeletons';
 import { api } from '../services/api';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis } from 'recharts';
 
@@ -59,7 +60,7 @@ export function CompanyIntelligence() {
     }
   };
 
-  if (loading) return <LoadingSpinner text="Fetching company hiring data..." />;
+  if (loading) return <PageSkeleton hasMetrics={false} hasChart={false} hasTable />;
   if (error) return (
     <div style={{ padding: '40px' }}>
       <ErrorBanner error={error} onRetry={loadCompanies} />
